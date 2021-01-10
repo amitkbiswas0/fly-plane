@@ -2,7 +2,16 @@
     "cSpell.words": [
         "OPENGL",
         "OUTOFTHESCREEN",
+        "Rotatef",
         "Scalef",
         "Translatef"
-    ]
+    ],
+    "files.associations": {
+        "**/*.ejs": "html",
+        "**/*.html": "html",
+        "**/templates/**/*.html": "django-html",
+        "**/templates/**/*": "django-txt",
+        "**/requirements{/**,*}.{txt,in}": "pip-requirements",
+        "ostream": "cpp"
+    }
 }

@@ -13,6 +13,22 @@ float cloudFiveY = OUTOFTHESCREEN;
 // game global variables
 int GAME_STATE = 0; // 0 is homepage, 1 is gamepage
 int SCORE = 0;
+bool GAME_OVER = false;
+int gameOverTimer = 0;
+
+// plane position
+float planeInitialPosX = -5;
+float planePosX = planeInitialPosX;
+float planeShooting = false;
+
+// bullet postions
+float bulletInitialPosX;
+float bulletInitialPosY = -45;
+bool getBulletInitial = false;
+
+// enemy global variable
+float enemyInitialPosY = 60;
+float enemyTimer = 0;
 
 void showText(string text, float r, float g, float b, float x, float y, float z)
 {
@@ -31,33 +47,39 @@ void moveClouds()
     cloud(cloudFiveY, -100, 0.8, 0.9);
 }
 
+void resetGame(string msg)
+{
+    enemyInitialPosY = 60;
+    enemyTimer = 0;
+    GAME_OVER = true;
+    GAME_STATE = 0;
+    planePosX = planeInitialPosX;
+    cout << msg << endl;
+}
+
 void specialKeyListener(int key, int x, int y)
 {
     switch (key)
     {
-    case GLUT_KEY_DOWN: //down arrow key
-        break;
-    case GLUT_KEY_UP: // up arrow key
-        break;
-
     case GLUT_KEY_RIGHT:
+        if (GAME_STATE == 1 && planePosX < OUTOFTHESCREEN)
+        {
+            planePosX += 4;
+        }
         break;
     case GLUT_KEY_LEFT:
+        if (GAME_STATE == 1 && planePosX > -OUTOFTHESCREEN)
+        {
+            planePosX -= 4;
+        }
         break;
-
-    case GLUT_KEY_PAGE_UP:
-        break;
-    case GLUT_KEY_PAGE_DOWN:
-        break;
-
-    case GLUT_KEY_INSERT:
-        break;
-
-    case GLUT_KEY_HOME:
-        break;
-    case GLUT_KEY_END:
-        break;
-
+    case GLUT_KEY_UP:
+        if (GAME_STATE == 1)
+        {
+            cout << "bullet" << endl;
+            SCORE += 1;
+            planeShooting = true;
+        }
     default:
         break;
     }
@@ -72,13 +94,13 @@ void keyboardListener(unsigned char key, int x, int y)
         GAME_STATE = 1;
         break;
     case 'q':
-        GAME_STATE = 0;
+        resetGame("Game Over by Quitting!");
         break;
     case 'S':
         GAME_STATE = 1;
         break;
     case 'Q':
-        GAME_STATE = 0;
+        resetGame("Game Over by Quitting!");
         break;
     default:
         break;
@@ -111,7 +133,25 @@ void display()
         showText("AIRPLANE RACING", 0, 0, 0, -22, 24, 1);
         showText("Press S to start the game.", 0, 0, 0, -25, 10, 1);
         rectangle(-35, 40, 0, 70, 40, 1, 1, 1);
-        plane(-5, -20, 0, 0.5);
+
+        plane(-5, -20, 0, 0.5, 0, 0, 0, 1, 1, 1);
+
+        if (GAME_OVER == true)
+        {
+            if (gameOverTimer < 1500)
+            {
+                showText("GAME OVER!", 1, 0, 0, -15, -65, 1);
+                showText("Your Score: ", 0, 0, 0, -14, -75, 1);
+                showText(to_string(SCORE), 1, 1, 1, 12, -75, 1);
+                gameOverTimer += 10;
+            }
+            else
+            {
+                GAME_OVER = false;
+                gameOverTimer = 0;
+                SCORE = 0;
+            }
+        }
     }
     else
     {
@@ -119,7 +159,45 @@ void display()
         rectangle(-80, 80, 0, 45, 10, 0, 0.1, 0.1);
 
         showText("SCORE: ", 1, 1, 1, 51, 72, 1);
+        showText(to_string(SCORE), 1, 1, 1, 72, 72, 1);
         rectangle(50, 80, 0, 30, 10, 0, 0.1, 0.1);
+
+        if (enemyTimer < 1500)
+        {
+            enemyHive(-60, enemyInitialPosY, 0);
+            enemyTimer += 10;
+        }
+        else
+        {
+            enemyTimer = 0;
+            enemyInitialPosY -= 10;
+
+            if (enemyInitialPosY < -10)
+            {
+                resetGame("Game Over by Death!");
+            }
+        }
+        if (planeShooting == true)
+        {
+            if (getBulletInitial == false)
+            {
+                bulletInitialPosX = ((planePosX + 5.0) * (3.0 / 10.0));
+                getBulletInitial = true;
+            }
+            if (bulletInitialPosY >= enemyInitialPosY - 30)
+            {
+                planeShooting = false;
+                getBulletInitial = false;
+                bulletInitialPosY = -45;
+                float bulletOutScreen = -300;
+                bullet(bulletOutScreen, -300, 1);
+            }
+            else
+            {
+                bullet(bulletInitialPosY, bulletInitialPosX, 1);
+            }
+        }
+        plane(planePosX, -180, 0, 0.3, 0, 0, 0, 1, 1, 1);
     }
 
     moveClouds();
@@ -134,6 +212,7 @@ void display()
 void animate()
 {
     //codes for any changes in Models, Camera
+
     glutPostRedisplay(); // marks the current window as needing to be redisplayed
 }
 

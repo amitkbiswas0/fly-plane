@@ -3,11 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
+
 #include <GL/glut.h>
+
+using namespace std;
 
 // macros
 #define PI (2 * acos(0.0))
 #define OUTOFTHESCREEN 200
+
+// enemy hive
+const int rowVal = 3;
+const int colVal = 12;
 
 void circle(float radius_x, float radius_y)
 {
@@ -139,13 +147,13 @@ void cloud(float &initialPosY, float initialPosX, float speed, float scale)
     glPopMatrix();
 }
 
-void plane(float x, float y, float z, float scale)
+void plane(float x, float y, float z, float scale, float primaryR, float primaryG, float primaryB, float secondaryR, float secondaryG, float secondaryB)
 {
     glPushMatrix();
     glScalef(scale, scale, 0);
 
     // top
-    glColor3f(0, 0.1, 0.1);
+    glColor3f(primaryR, primaryG, primaryB);
     glBegin(GL_POLYGON);
     {
         glVertex3f(x, y, z);
@@ -156,22 +164,22 @@ void plane(float x, float y, float z, float scale)
     glEnd();
 
     // body
-    glColor3f(1, 1, 1);
+    glColor3f(secondaryR, secondaryG, secondaryB);
     glBegin(GL_QUADS);
     {
-        // glColor3f(1, 1, 1);
+        glColor3f(secondaryR, secondaryG, secondaryB);
         glVertex3f(x, y, z);
-        // glColor3f(0, 0.1, 0.1);
+        glColor3f(primaryR, primaryG, primaryB);
         glVertex3f(x + 10, y, z);
-        // glColor3f(0, 0.1, 0.1);
+        glColor3f(primaryR, primaryG, primaryB);
         glVertex3f(x + 10, y - 50, z);
-        // glColor3f(1, 1, 1);
+        glColor3f(secondaryR, secondaryG, secondaryB);
         glVertex3f(x, y - 50, z);
     }
     glEnd();
 
     // right wing
-    glColor3f(0, 0.1, 0.1);
+    glColor3f(primaryR, primaryG, primaryB);
     glBegin(GL_POLYGON);
     {
         glVertex3f(x + 10, y - 10, z);
@@ -182,7 +190,7 @@ void plane(float x, float y, float z, float scale)
     glEnd();
 
     // bottom wing
-    glColor3f(1, 1, 1);
+    glColor3f(secondaryR, secondaryG, secondaryB);
     glBegin(GL_POLYGON);
     {
         glVertex3f(x + 5, y - 55, z);
@@ -195,7 +203,7 @@ void plane(float x, float y, float z, float scale)
     glEnd();
 
     // bottom
-    glColor3f(0, 0.1, 0.1);
+    glColor3f(primaryR, primaryG, primaryB);
     glBegin(GL_POLYGON);
     {
         glVertex3f(x + 10, y - 50, z);
@@ -205,7 +213,7 @@ void plane(float x, float y, float z, float scale)
     glEnd();
 
     // left wing
-    glColor3f(0, 0.1, 0.1);
+    glColor3f(primaryR, primaryG, primaryB);
     glBegin(GL_POLYGON);
     {
         glVertex3f(x, y - 10, z);
@@ -215,4 +223,52 @@ void plane(float x, float y, float z, float scale)
     }
     glEnd();
     glPopMatrix();
+}
+
+void bullet(float &initialPosY, float initialPosX, float z)
+{
+    if (initialPosY != -300)
+    {
+        initialPosY += 1.5;
+    }
+
+    glColor3f(1, 0, 0);
+    glPushMatrix();
+    glTranslatef(initialPosX, initialPosY, z),
+        circle(2, 2);
+    glPopMatrix();
+}
+
+void enemy(float x, float y, float z, float red, float green, float blue)
+{
+    glColor3f(red, green, blue);
+    glBegin(GL_TRIANGLES);
+    {
+        glVertex3f(x, y, z);
+        glVertex3f(x + 5, y - 10, z);
+        glVertex3f(x + 5, y - 5, z);
+    }
+    glEnd();
+    glBegin(GL_TRIANGLES);
+    {
+        glVertex3f(x + 5, y - 10, z);
+        glVertex3f(x + 10, y, z);
+        glVertex3f(x + 5, y - 5, z);
+    }
+    glEnd();
+}
+
+void enemyHive(float x, float y, float z)
+{
+    srand((unsigned)time(NULL));
+    for (int row = 0; row < rowVal; row++)
+    {
+        for (int col = 0; col < colVal; col++)
+        {
+            float r = ((float)rand() / RAND_MAX);
+            float g = ((float)rand() / RAND_MAX);
+            float b = ((float)rand() / RAND_MAX);
+            enemy(x + 10 * col, y - 10 * row, z, r, g, b);
+        }
+    }
 }
