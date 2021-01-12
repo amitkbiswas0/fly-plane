@@ -13,7 +13,7 @@ float cloudFiveY = OUTOFTHESCREEN;
 // game global variables
 int GAME_STATE = 0; // 0 is homepage, 1 is gamepage
 int SCORE = 0;
-bool GAME_OVER = false;
+string GAME_OVER = "";
 int gameOverTimer = 0;
 
 // plane position
@@ -51,10 +51,9 @@ void resetGame(string msg)
 {
     enemyInitialPosY = 60;
     enemyTimer = 0;
-    GAME_OVER = true;
+    GAME_OVER = msg;
     GAME_STATE = 0;
     planePosX = planeInitialPosX;
-    cout << msg << endl;
 }
 
 void specialKeyListener(int key, int x, int y)
@@ -76,7 +75,6 @@ void specialKeyListener(int key, int x, int y)
     case GLUT_KEY_UP:
         if (GAME_STATE == 1)
         {
-            cout << "bullet" << endl;
             SCORE += 1;
             planeShooting = true;
         }
@@ -91,16 +89,34 @@ void keyboardListener(unsigned char key, int x, int y)
     {
 
     case 's':
-        GAME_STATE = 1;
+        if (GAME_STATE != 1)
+        {
+            GAME_STATE = 1;
+            GAME_OVER = "";
+            gameOverTimer = 0;
+            SCORE = 0;
+        }
         break;
     case 'q':
-        resetGame("Game Over by Quitting!");
+        if (GAME_STATE != 0)
+        {
+            resetGame("quit");
+        }
         break;
     case 'S':
-        GAME_STATE = 1;
+        if (GAME_STATE != 1)
+        {
+            GAME_STATE = 1;
+            GAME_OVER = "";
+            gameOverTimer = 0;
+            SCORE = 0;
+        }
         break;
     case 'Q':
-        resetGame("Game Over by Quitting!");
+        if (GAME_STATE != 0)
+        {
+            resetGame("quit");
+        }
         break;
     default:
         break;
@@ -136,18 +152,53 @@ void display()
 
         plane(-5, -20, 0, 0.5, 0, 0, 0, 1, 1, 1);
 
-        if (GAME_OVER == true)
+        if (GAME_OVER.compare("died") == 0)
         {
-            if (gameOverTimer < 1500)
+            if (gameOverTimer < 5000)
             {
-                showText("GAME OVER!", 1, 0, 0, -15, -65, 1);
+                showText("YOU DIED!", 1, 0, 0, -15, -65, 1);
                 showText("Your Score: ", 0, 0, 0, -14, -75, 1);
-                showText(to_string(SCORE), 1, 1, 1, 12, -75, 1);
+                showText(to_string(SCORE), 0, 0, 0, 12, -75, 1);
+                rectangle(-18, -55, 0, 35, 25, 1, 1, 1);
                 gameOverTimer += 10;
             }
             else
             {
-                GAME_OVER = false;
+                GAME_OVER = "";
+                gameOverTimer = 0;
+                SCORE = 0;
+            }
+        }
+        else if (GAME_OVER.compare("won") == 0)
+        {
+            if (gameOverTimer < 5000)
+            {
+                showText("YOU WON!", 1, 0, 1, -10, -65, 1);
+                showText("Your Score: ", 0, 0, 0, -14, -75, 1);
+                showText(to_string(SCORE), 0, 0, 0, 12, -75, 1);
+                rectangle(-18, -55, 0, 40, 25, 1, 1, 1);
+                gameOverTimer += 10;
+            }
+            else
+            {
+                GAME_OVER = "";
+                gameOverTimer = 0;
+                SCORE = 0;
+            }
+        }
+        else if (GAME_OVER.compare("quit") == 0)
+        {
+            if (gameOverTimer < 5000)
+            {
+                showText("YOU QUIT!", 1, 0, 1, -10, -65, 1);
+                showText("Your Score: ", 0, 0, 0, -12, -75, 1);
+                showText(to_string(SCORE), 0, 0, 0, 12, -75, 1);
+                rectangle(-18, -55, 0, 40, 25, 1, 1, 1);
+                gameOverTimer += 10;
+            }
+            else
+            {
+                GAME_OVER = "";
                 gameOverTimer = 0;
                 SCORE = 0;
             }
@@ -174,7 +225,8 @@ void display()
 
             if (enemyInitialPosY < -10)
             {
-                resetGame("Game Over by Death!");
+                // Game Over by Death
+                resetGame("died");
             }
         }
         if (planeShooting == true)
@@ -191,6 +243,12 @@ void display()
                 bulletInitialPosY = -45;
                 float bulletOutScreen = -300;
                 bullet(bulletOutScreen, -300, 1);
+
+                if (SCORE >= 15)
+                {
+                    // Game Over by win
+                    resetGame("won");
+                }
             }
             else
             {
